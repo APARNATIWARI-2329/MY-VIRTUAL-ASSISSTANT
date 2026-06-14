@@ -15,10 +15,13 @@ const isAuth = async (req, res, next) => {
       });
     }
 
-    const verifyToken = jwt.verify(
-      token,
-      process.env.JWT_SECRET
-    );
+    if (!process.env.JWT_SECRET) {
+      return res.status(500).json({
+        message: "JWT_SECRET is not set",
+      });
+    }
+
+    const verifyToken = jwt.verify(token, process.env.JWT_SECRET);
 
     req.userId = verifyToken.userId;
 

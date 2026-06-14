@@ -28,10 +28,12 @@ export const signUp = async (req, res) => {
 
        res.cookie("token", token, {
   httpOnly: true,
-  secure: true,
+  // Render/HTTPS: secure=true. If you ever run on localhost over HTTP,
+  // set this to false via NODE_ENV.
+  secure: process.env.NODE_ENV === "production",
   sameSite: "none",
   maxAge: 10 * 24 * 60 * 60 * 1000,
-  path: "/"
+  path: "/",
 });
 
         return res.status(201).json(user)   
@@ -63,10 +65,10 @@ export const Login = async (req, res) => {
 
        res.cookie("token", token, {
   httpOnly: true,
-  secure: true,
+  secure: process.env.NODE_ENV === "production",
   sameSite: "none",
   maxAge: 10 * 24 * 60 * 60 * 1000,
-  path: "/"
+  path: "/",
 });
 
         return res.status(200).json(user)
