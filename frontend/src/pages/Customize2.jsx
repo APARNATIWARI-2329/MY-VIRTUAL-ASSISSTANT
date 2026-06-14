@@ -49,9 +49,16 @@ function Customize2() {
 
       navigate("/");
     } catch (error) {
-      console.log(error);
-      alert("Error updating assistant data");
-    } finally {
+  console.log("FULL ERROR:", error);
+
+  console.log("STATUS:", error?.response?.status);
+
+  console.log("DATA:", error?.response?.data);
+
+  alert(
+    JSON.stringify(error?.response?.data || error.message)
+  );
+} finally {
       setLoading(false);
     }
   };
