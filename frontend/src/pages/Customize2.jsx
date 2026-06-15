@@ -33,7 +33,10 @@ function Customize2() {
       if (backendImage) {
         formData.append("assistantImage", backendImage);
       } else {
-        formData.append("imageUrl", selectedImage);
+        const absoluteUrl = selectedImage.startsWith("http")
+          ? selectedImage
+          : `${window.location.origin}${selectedImage}`;
+        formData.append("imageUrl", absoluteUrl);
       }
 
       const result = await axios.put(

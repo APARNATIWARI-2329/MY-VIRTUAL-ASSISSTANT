@@ -10,7 +10,9 @@ import Customize from "./pages/Customize";
 import Customize2 from "./pages/Customize2";
 
 function App() {
-  const { userData } = useContext(userDataContext);
+  const { userData, loading } = useContext(userDataContext);
+
+  if (loading) return null;
 
   return (
     <Routes>

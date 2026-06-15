@@ -7,6 +7,7 @@ function UserContext({ children }) {
 const serverUrl = import.meta.env.VITE_SERVER_URL
 console.log("SERVER URL =", serverUrl);
   const [userData, setUserData] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   const [frontendImage, setFrontendImage] = useState(null);
 
@@ -30,6 +31,9 @@ console.log("SERVER URL =", serverUrl);
 
   } catch (error) {
     console.error(error);
+    setUserData(null);
+  } finally {
+    setLoading(false);
   }
 }, [serverUrl]);
 
@@ -58,17 +62,14 @@ const getGeminiResponse = useCallback(async (command) => {
 
 
 useEffect(() => {
-  const fetchUser = async () => {
-    await handleCurrentUser();
-  };
-
-  fetchUser();
+  handleCurrentUser();
 }, [handleCurrentUser]);
 
   const value = {
   serverUrl,
   userData,
   setUserData,
+  loading,
   frontendImage,
   setFrontendImage,
   backendImage,
