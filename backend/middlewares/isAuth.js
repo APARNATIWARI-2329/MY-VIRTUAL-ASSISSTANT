@@ -4,7 +4,9 @@ const isAuth = async (req, res, next) => {
   try {
 
     console.log("===== AUTH DEBUG =====");
+    console.log("Raw Cookie header:", req.headers.cookie);
     console.log("Cookies:", req.cookies);
+    console.log("Cookie keys:", Object.keys(req.cookies || {}));
     console.log("Token:", req.cookies?.token);
 
     const token = req.cookies.token;

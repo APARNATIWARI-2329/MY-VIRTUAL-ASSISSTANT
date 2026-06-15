@@ -21,7 +21,7 @@ app.use(
 const port = process.env.PORT || 8000;
 
 app.use(express.json());
-app.use(cookieParser());
+app.use(cookieParser(process.env.JWT_SECRET || undefined));
 
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
