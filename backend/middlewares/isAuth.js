@@ -8,8 +8,11 @@ const isAuth = async (req, res, next) => {
     console.log("Cookies:", req.cookies);
     console.log("Cookie keys:", Object.keys(req.cookies || {}));
     console.log("Token:", req.cookies?.token);
+    console.log("Request origin:", req.headers.origin);
+    console.log("Request host:", req.headers.host);
 
-    const token = req.cookies.token;
+    const token = req.cookies?.token;
+
 
     if (!token) {
       return res.status(401).json({
