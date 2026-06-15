@@ -43,7 +43,10 @@ const Home = () => {
   // ---------------------------
   const clearHistory = async () => {
     try {
-      await axios.delete(`${serverUrl}/api/user/clearHistory`, { withCredentials: true });
+      const token = localStorage.getItem("token");
+      await axios.delete(`${serverUrl}/api/user/clearHistory`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setUserData((prev) => (prev ? { ...prev, history: [] } : prev));
     } catch (error) {
       console.log("Clear history failed:", error);
@@ -52,18 +55,12 @@ const Home = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.get(`${serverUrl}/api/auth/logout`, {
-        withCredentials: true,
-      });
-
+      localStorage.removeItem("token");
       setUserData(null);
-
       navigate("/signin");
     } catch (error) {
       console.log(error);
-
       setUserData(null);
-
       navigate("/signin");
     }
   };

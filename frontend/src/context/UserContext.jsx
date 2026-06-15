@@ -19,11 +19,12 @@ console.log("SERVER URL =", serverUrl);
 
   const handleCurrentUser = useCallback(async () => {
   try {
+    const token = localStorage.getItem("token");
+    if (!token) { setLoading(false); return; }
+
     const result = await axios.get(
       `${serverUrl}/api/user/current`,
-      {
-        withCredentials: true
-      }
+      { headers: { Authorization: `Bearer ${token}` } }
     );
 
     setUserData(result.data);
@@ -39,10 +40,11 @@ console.log("SERVER URL =", serverUrl);
 
 const getGeminiResponse = useCallback(async (command) => {
   try {
+    const token = localStorage.getItem("token");
     const result = await axios.post(
       `${serverUrl}/api/user/askToAssistant`,
       { command },
-      { withCredentials: true }
+      { headers: { Authorization: `Bearer ${token}` } }
     );
 
     return result.data;

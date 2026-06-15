@@ -39,11 +39,12 @@ function Customize2() {
         formData.append("imageUrl", absoluteUrl);
       }
 
+      const token = localStorage.getItem("token");
       const result = await axios.put(
-        `${serverUrl}/api/user/update`, 
-        formData, {
-        withCredentials: true,
-      });
+        `${serverUrl}/api/user/update`,
+        formData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
       console.log(result.data);
 

@@ -38,8 +38,9 @@ function SignUp() {
     try{
       let result = await axios.post(`${serverUrl}/api/auth/signup`, {
         name,email,password
-      } , {withCredentials : true})
-      setUserData(result.data)
+      })
+      localStorage.setItem("token", result.data.token)
+      setUserData(result.data.user)
       setLoading(false)
       navigate("/customize")
     }catch(e){

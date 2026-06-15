@@ -36,13 +36,10 @@ function SignIn() {
     try {
       let result = await axios.post(
         `${serverUrl}/api/auth/login`,
-        {
-          email,
-          password,
-        },
-        { withCredentials: true },
+        { email, password },
       );
-      setUserData(result.data);
+      localStorage.setItem("token", result.data.token);
+      setUserData(result.data.user);
       setLoading(false)
       navigate("/");
     } catch (e) {

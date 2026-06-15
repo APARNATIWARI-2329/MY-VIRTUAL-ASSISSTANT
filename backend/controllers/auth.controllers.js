@@ -26,17 +26,7 @@ export const signUp = async (req, res) => {
 
         const token = await genToken(user._id)
 
-       res.cookie("token", token, {
-  httpOnly: true,
-  // Render/HTTPS: secure=true. If you ever run on localhost over HTTP,
-  // set this to false via NODE_ENV.
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "none",
-  maxAge: 10 * 24 * 60 * 60 * 1000,
-  path: "/",
-});
-
-        return res.status(201).json(user)   
+        return res.status(201).json({ user, token })
 
     }catch(error){
         console.error("Sign-up failed:", error.message)
@@ -63,15 +53,7 @@ export const Login = async (req, res) => {
 
         const token = await genToken(user._id)
 
-       res.cookie("token", token, {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "none",
-  maxAge: 10 * 24 * 60 * 60 * 1000,
-  path: "/",
-});
-
-        return res.status(200).json(user)
+        return res.status(200).json({ user, token })
 
     }catch(error){
         console.error("Login failed:", error.message)
