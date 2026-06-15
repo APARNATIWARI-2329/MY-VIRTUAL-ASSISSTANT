@@ -67,10 +67,6 @@ const Home = () => {
 
   // Open external websites in a dedicated popup window.
   // The window is created on the Start Assistant click, which avoids browser popup blocking.
-const openExternalLink = useCallback((url) => {
-  window.open(url, "_blank");
-}, []);
-
 
   // const ensureExternalWindow = useCallback(() => {
   //   console.log("Creating popup...");
@@ -276,74 +272,47 @@ const openExternalLink = useCallback((url) => {
   // 8) COMMAND ROUTER
   // ---------------------------
   const handleCommand = useCallback(
-    (data) => {
+    (data, preOpenedWindow) => {
       console.log("DATA RECEIVED =", data);
       console.log("TYPE =", data?.type);
       console.log("USER INPUT =", data?.userInput);
 
-      if (!data) return;
+      if (!data) {
+        preOpenedWindow?.close();
+        return;
+      }
 
       const { type, userInput, response } = data;
 
       speak(response);
 
-      if (type === "google-search") {
-        const query = encodeURIComponent(userInput || "");
+      const urlMap = {
+        "google-search": `https://www.google.com/search?q=${encodeURIComponent(userInput || "")}`,
+        "calculator-open": "https://www.google.com/search?q=calculator",
+        "instagram-open": "https://www.instagram.com/",
+        "facebook-open": "https://www.facebook.com/",
+        "whatsapp-open": "https://web.whatsapp.com/",
+        "gmail-open": "https://mail.google.com/",
+        "github-open": "https://github.com/",
+        "linkedin-open": "https://www.linkedin.com/",
+        "chatgpt-open": "https://chatgpt.com/",
+        "maps-open": "https://maps.google.com/",
+        "weather-show": "https://www.google.com/search?q=weather",
+        "youtube-search": `https://www.youtube.com/results?search_query=${encodeURIComponent(userInput || "")}`,
+        "youtube-play": `https://www.youtube.com/results?search_query=${encodeURIComponent(userInput || "")}`,
+      };
 
-        openExternalLink(`https://www.google.com/search?q=${query}`);
-      }
+      const url = urlMap[type];
 
-      if (type === "calculator-open") {
-        openExternalLink("https://www.google.com/search?q=calculator");
-      }
-
-      if (type === "instagram-open") {
-        openExternalLink("https://www.instagram.com/");
-      }
-
-      if (type === "facebook-open") {
-        openExternalLink("https://www.facebook.com/");
-      }
-
-      if (type === "whatsapp-open") {
-        openExternalLink("https://web.whatsapp.com/");
-      }
-
-      if (type === "gmail-open") {
-        openExternalLink("https://mail.google.com/");
-      }
-
-      if (type === "github-open") {
-        openExternalLink("https://github.com/");
-      }
-
-      if (type === "linkedin-open") {
-        openExternalLink("https://www.linkedin.com/");
-      }
-
-      if (type === "chatgpt-open") {
-        openExternalLink("https://chatgpt.com/");
-      }
-
-      if (type === "maps-open") {
-        openExternalLink("https://maps.google.com/");
-      }
-
-      if (type === "weather-show") {
-        openExternalLink("https://www.google.com/search?q=weather");
-      }
-
-      if (type === "youtube-search" || type === "youtube-play") {
-        const query = encodeURIComponent(userInput || "");
-
-        openExternalLink(
-          query
-            ? `https://www.youtube.com/results?search_query=${query}`
-            : "https://www.youtube.com/",
-        );
+      if (url && preOpenedWindow && !preOpenedWindow.closed) {
+        preOpenedWindow.location.href = url;
+      } else if (url) {
+        window.open(url, "_blank");
+      } else {
+        preOpenedWindow?.close();
       }
     },
-    [openExternalLink, speak],
+    [speak],
   );
 
   // ---------------------------
@@ -466,6 +435,10 @@ recognition.onresult = async (e) => {
 
   recognition.stop();
 
+  // Open a blank window immediately (within the sync event handler)
+  // so the browser allows it, then navigate to the URL after async response
+  const preOpenedWindow = window.open("", "_blank");
+
   try {
     console.log("Sending to Gemini:", cleanCommand);
 
@@ -478,6 +451,7 @@ recognition.onresult = async (e) => {
         data = JSON.parse(data);
       } catch (error) {
         console.error("JSON Parse Error:", error);
+        preOpenedWindow?.close();
         return;
       }
     }
@@ -486,13 +460,13 @@ recognition.onresult = async (e) => {
 
     if (data) {
       console.log("FINAL COMMAND:", data);
-      setAiText(data.response); // show text immediately
-      handleCommand(data);
+      setAiText(data.response);
+      handleCommand(data, preOpenedWindow);
       setUserData((prev) => prev ? { ...prev, history: [...(prev.history || []), cleanCommand] } : prev);
     }
   } catch (error) {
     console.error(error);
-
+    preOpenedWindow?.close();
     setAiText("Sorry, something went wrong.");
     speak("Sorry, something went wrong.");
   }
