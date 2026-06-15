@@ -12,7 +12,12 @@ import Customize2 from "./pages/Customize2";
 function App() {
   const { userData, loading } = useContext(userDataContext);
 
-  if (loading) return null;
+  if (loading) return (
+    <div className="w-full h-screen bg-black flex flex-col items-center justify-center gap-4">
+      <div className="w-12 h-12 rounded-full border-4 border-purple-500 border-t-transparent animate-spin" />
+      <p className="text-white text-lg font-semibold tracking-wide animate-pulse">Loading...</p>
+    </div>
+  );
 
   return (
     <Routes>
