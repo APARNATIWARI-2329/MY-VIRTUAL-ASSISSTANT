@@ -11,7 +11,8 @@ An intelligent AI-powered virtual assistant that allows users to interact using 
 ---
 
 ## 🚀 Live Demo
-(https://my-virtual-assisstant.vercel.app/)
+https://my-virtual-assisstant.vercel.app/
+
 ---
 
 ## 📌 Features
