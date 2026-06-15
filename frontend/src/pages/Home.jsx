@@ -65,49 +65,15 @@ const Home = () => {
     }
   };
 
-  // Open external websites in a dedicated popup window.
-  // The window is created on the Start Assistant click, which avoids browser popup blocking.
-
-  // const ensureExternalWindow = useCallback(() => {
-  //   console.log("Creating popup...");
-
-  //   if (!externalWindowRef.current || externalWindowRef.current.closed) {
-  //     externalWindowRef.current = window.open(
-  //       "about:blank",
-  //       "_blank",
-  //       "noopener,noreferrer",
-  //     );
-
-  //     if (externalWindowRef.current) {
-  //       externalWindowRef.current.opener = null;
-  //     }
-  //   }
-
-  //   return externalWindowRef.current;
-  // }, []);
-
-  // const openExternalLink = useCallback(
-  //   (url) => {
-  //     const popup = ensureExternalWindow();
-
-  //     if (popup) {
-  //       popup.location.href = url;
-  //       popup.focus();
-  //       return;
-  //     }
-
-  //     try {
-  //       const link = document.createElement("a");
-  //       link.href = url;
-  //       link.target = "_blank";
-  //       link.rel = "noopener noreferrer";
-  //       link.click();
-  //     } catch (error) {
-  //       console.warn("Could not open external link:", error);
-  //     }
-  //   },
-  //   [ensureExternalWindow],
-  // );
+  const openUrl = (url) => {
+    const a = document.createElement("a");
+    a.href = url;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
 
   // ---------------------------
   // 5) VOICE RECOGNITION HELPERS
@@ -272,15 +238,8 @@ const Home = () => {
   // 8) COMMAND ROUTER
   // ---------------------------
   const handleCommand = useCallback(
-    (data, preOpenedWindow) => {
-      console.log("DATA RECEIVED =", data);
-      console.log("TYPE =", data?.type);
-      console.log("USER INPUT =", data?.userInput);
-
-      if (!data) {
-        preOpenedWindow?.close();
-        return;
-      }
+    (data) => {
+      if (!data) return;
 
       const { type, userInput, response } = data;
 
@@ -303,14 +262,7 @@ const Home = () => {
       };
 
       const url = urlMap[type];
-
-      if (url && preOpenedWindow && !preOpenedWindow.closed) {
-        preOpenedWindow.location.href = url;
-      } else if (url) {
-        window.open(url, "_blank");
-      } else {
-        preOpenedWindow?.close();
-      }
+      if (url) openUrl(url);
     },
     [speak],
   );
@@ -414,59 +366,35 @@ const Home = () => {
       }
     };
 
-recognition.onresult = async (e) => {
+  recognition.onresult = async (e) => {
   const transcript =
     e.results[e.results.length - 1][0].transcript.trim();
-
-  console.log("Heard:", transcript);
 
   if (!assistantEnabledRef.current) return;
 
   const cleanCommand = getCleanCommandText(transcript);
 
-  if (!cleanCommand || cleanCommand.length < 3) {
-    console.log("Ignored: command is too short");
-    return;
-  }
+  if (!cleanCommand || cleanCommand.length < 3) return;
 
   setAiText("");
   setUserText(cleanCommand);
   setAssistantStatus("Processing");
-
   recognition.stop();
 
-  // Open a blank window immediately (within the sync event handler)
-  // so the browser allows it, then navigate to the URL after async response
-  const preOpenedWindow = window.open("", "_blank");
-
   try {
-    console.log("Sending to Gemini:", cleanCommand);
-
     let data = await getGeminiResponse(cleanCommand);
 
-    console.log("Gemini Returned:", data);
-
     if (typeof data === "string") {
-      try {
-        data = JSON.parse(data);
-      } catch (error) {
-        console.error("JSON Parse Error:", error);
-        preOpenedWindow?.close();
-        return;
-      }
+      try { data = JSON.parse(data); } catch { return; }
     }
 
-    console.log("RAW GEMINI DATA:", data);
-
     if (data) {
-      console.log("FINAL COMMAND:", data);
       setAiText(data.response);
-      handleCommand(data, preOpenedWindow);
+      handleCommand(data);
       setUserData((prev) => prev ? { ...prev, history: [...(prev.history || []), cleanCommand] } : prev);
     }
   } catch (error) {
     console.error(error);
-    preOpenedWindow?.close();
     setAiText("Sorry, something went wrong.");
     speak("Sorry, something went wrong.");
   }
